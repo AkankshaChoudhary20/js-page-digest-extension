@@ -1,0 +1,32 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Page Digest — Options</title>
+    <link rel="stylesheet" href="options.css" />
+  </head>
+  <body>
+    <h1>Page Digest — Settings</h1>
+
+    <label for="api-key">Anthropic API key</label>
+    <input type="password" id="api-key" placeholder="sk-ant-..." autocomplete="off" />
+    <p class="note">
+      Stored only in this browser's local extension storage. Never sent anywhere except
+      <code>api.anthropic.com</code>. Get a key at
+      <a href="https://platform.claude.com/settings/keys" target="_blank" rel="noopener noreferrer"
+        >platform.claude.com</a
+      >.
+    </p>
+
+    <label for="model">Model</label>
+    <select id="model">
+      <option value="claude-haiku-4-5">Claude Haiku 4.5 — fastest, cheapest (default)</option>
+      <option value="claude-sonnet-5">Claude Sonnet 5 — higher quality, more expensive</option>
+    </select>
+
+    <button id="save">Save</button>
+    <p id="status" class="status"></p>
+
+    <script src="options.js"></script>
+  </body>
+</html>
