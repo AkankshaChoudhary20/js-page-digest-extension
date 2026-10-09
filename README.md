@@ -81,6 +81,10 @@ boundary. Re-running the same mode on a page you've already summarized
 loads instantly from cache; the panel's **Regenerate** button forces a fresh
 API call.
 
+Cached summaries expire after 24 hours. The next run removes an expired
+entry and generates a fresh summary. Use **Regenerate** for changes made
+before the expiry window ends.
+
 ## Known limitations
 
 - No build step / bundler — this is intentionally plain JS with no

@@ -1,5 +1,6 @@
 (() => {
   const HOST_ID = 'page-digest-extension-host';
+  const CACHE_TTL_MS = 24 * 60 * 60 * 1000;
   let shadowRoot = null;
   let bodyEl = null;
   let statusEl = null;
@@ -161,11 +162,14 @@
     if (!force) {
       const key = cacheKey(mode);
       const cached = await chrome.storage.local.get(key);
-      if (cached[key]) {
+      const entry = cached[key];
+      const age = entry ? Date.now() - entry.savedAt : NaN;
+      if (entry && typeof entry.text === 'string' && Number.isFinite(age) && age >= 0 && age < CACHE_TTL_MS) {
         bodyEl.textContent = cached[key].text;
         setStatus(`Cached · ${new Date(cached[key].savedAt).toLocaleTimeString()}`);
         return;
       }
+      if (entry) await chrome.storage.local.remove(key);
     }
 
     setStatus('Generating…');
