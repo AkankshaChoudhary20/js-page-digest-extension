@@ -97,3 +97,5 @@ before the expiry window ends.
   without semantic HTML.
 - Rate limits and per-key spend are whatever your Anthropic account's tier
   allows — see [Rate limits](https://platform.claude.com/docs/en/api/rate-limits).
+
+Settings display a recoverable error if loading or saving fails. Save is disabled while a write is in progress, and status updates are announced to assistive technology.
