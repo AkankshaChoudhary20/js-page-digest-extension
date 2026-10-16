@@ -72,34 +72,38 @@ async function runDigest(port, { text, mode }) {
   let buffer = '';
   let fullText = '';
 
-  while (true) {
-    const { done, value } = await reader.read();
-    if (done) break;
-    buffer += decoder.decode(value, { stream: true });
-
-    const lines = buffer.split('\n');
-    buffer = lines.pop() ?? '';
-
-    for (const line of lines) {
-      if (!line.startsWith('data:')) continue;
-      const payload = line.slice(5).trim();
-      if (!payload) continue;
-
-      let event;
-      try {
-        event = JSON.parse(payload);
-      } catch {
-        continue;
-      }
-
-      if (event.type === 'content_block_delta' && event.delta?.type === 'text_delta') {
-        fullText += event.delta.text;
-        safePost(port, { type: 'delta', text: event.delta.text });
-      } else if (event.type === 'error') {
-        safePost(port, { type: 'error', message: event.error?.message ?? 'Stream error' });
-        return;
+  let streamError = false;
+  function processLine(line) {
+    if (!line.startsWith('data:')) return;
+    const payload = line.slice(5).trim();
+    if (!payload) return;
+    let event;
+    try { event = JSON.parse(payload); } catch { return; }
+    if (event.type === 'content_block_delta' && event.delta?.type === 'text_delta') {
+      fullText += event.delta.text;
+      safePost(port, {type: 'delta', text: event.delta.text});
+    } else if (event.type === 'error') {
+      streamError = true;
+      safePost(port, {type: 'error', message: event.error?.message ?? 'Stream error'});
+    }
+  }
+  try {
+    while (true) {
+      const {done, value} = await reader.read();
+      if (done) break;
+      buffer += decoder.decode(value, {stream: true});
+      const lines = buffer.split('\n');
+      buffer = lines.pop() ?? '';
+      for (const line of lines) {
+        processLine(line);
+        if (streamError) return;
       }
     }
+    buffer += decoder.decode();
+    if (buffer) processLine(buffer);
+    if (streamError) return;
+  } finally {
+    try { await reader.cancel(); } finally { reader.releaseLock(); }
   }
 
   safePost(port, { type: 'done', fullText });
