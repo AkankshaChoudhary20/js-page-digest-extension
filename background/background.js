@@ -15,16 +15,19 @@ const MODE_PROMPTS = {
 chrome.runtime.onConnect.addListener((port) => {
   if (port.name !== 'page-digest-stream') return;
 
+  const controller = new AbortController();
+  port.onDisconnect.addListener(() => controller.abort());
+
   port.onMessage.addListener((message) => {
     if (message.type === 'run') {
-      runDigest(port, message).catch((err) => {
+      runDigest(port, message, controller.signal).catch((err) => {
         safePost(port, { type: 'error', message: err instanceof Error ? err.message : String(err) });
       });
     }
   });
 });
 
-async function runDigest(port, { text, mode }) {
+async function runDigest(port, { text, mode }, signal) {
   const { apiKey, model } = await chrome.storage.local.get(['apiKey', 'model']);
   if (!apiKey) {
     safePost(port, { type: 'error', message: 'No API key set. Open the extension options to add one.' });
@@ -36,6 +39,7 @@ async function runDigest(port, { text, mode }) {
 
   const response = await fetch(API_URL, {
     method: 'POST',
+    signal,
     headers: {
       'content-type': 'application/json',
       'x-api-key': apiKey,
@@ -116,3 +120,4 @@ function safePost(port, message) {
     // port likely disconnected (tab navigated away); nothing to do
   }
 }
+
