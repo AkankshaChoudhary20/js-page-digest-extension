@@ -34,7 +34,7 @@ async function runDigest(port, { text, mode }, signal) {
     return;
   }
 
-  const instruction = MODE_PROMPTS[mode] ?? MODE_PROMPTS.summarize;
+  const instruction = Object.hasOwn(MODE_PROMPTS, mode) ? MODE_PROMPTS[mode] : MODE_PROMPTS.summarize;
   const truncated = text.slice(0, 12000);
 
   const response = await fetch(API_URL, {
@@ -120,4 +120,3 @@ function safePost(port, message) {
     // port likely disconnected (tab navigated away); nothing to do
   }
 }
-
