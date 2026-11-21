@@ -50,6 +50,11 @@ context the visited site could reach.
 The key and chosen model are stored only in `chrome.storage.local` on your
 machine — never synced, never sent anywhere except `api.anthropic.com`.
 
+After editing the extension, reload it from `chrome://extensions` and
+refresh the webpage so Chrome injects the updated content script. Verify on
+an ordinary `https://` page. Use **Regenerate** in the panel to exercise a
+fresh request and watch the response stream.
+
 ## How the streaming works
 
 The Messages API is called directly from the browser with
